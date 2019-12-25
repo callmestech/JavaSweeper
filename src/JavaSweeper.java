@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import sweeper.Box;
 import sweeper.Coord;
@@ -11,6 +13,8 @@ public class JavaSweeper extends JFrame {
     private Game game;
 
     private JPanel panel;
+    private JLabel label;
+
     private final int COLS = 9;
     private final int ROWS = 9;
     private final int BOMBS = 10;
@@ -26,16 +30,22 @@ public class JavaSweeper extends JFrame {
         setImages();
         initPanel();
         initFrame();
+        initLabel();
+    }
+
+    private void initLabel(){
+        label = new JLabel("Welcome!");
+        add(label, BorderLayout.SOUTH);
     }
 
     private void initFrame() {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setTitle("Java Sweeper");
-        setLocationRelativeTo(null);
         setResizable(false);
         setVisible(true);
         setIconImage(getImage("icon"));
         pack();
+        setLocationRelativeTo(null);
     }
 
     private void setImages() {
@@ -54,8 +64,33 @@ public class JavaSweeper extends JFrame {
                 }
             }
         };
+        panel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                int x = e.getX() / IMAGE_SIZE;
+                int y = e.getY() / IMAGE_SIZE;
+                Coord coord = new Coord(x, y);
+                if(e.getButton() == MouseEvent.BUTTON1)
+                    game.pressLeftButton(coord);
+                if(e.getButton() == MouseEvent.BUTTON3)
+                    game.pressRightButton(coord);
+                if(e.getButton() == MouseEvent.BUTTON2)
+                    game.start();
+                label.setText(getMessage());
+                panel.repaint();
+            }
+        });
         panel.setPreferredSize(new Dimension(Ranges.getSize().x * IMAGE_SIZE, Ranges.getSize().y * IMAGE_SIZE));
         add(panel);
+    }
+
+    private String getMessage() {
+        switch (game.getState()){
+            case PLAYED: return "Think twice";
+            case BOMBED: return "YOU LOSE! BA-DA-BOOOOM!";
+            case WINNER: return "YOU WIN!";
+            default: return "Welcome!";
+        }
     }
 
     private Image getImage(String name) {
@@ -63,4 +98,6 @@ public class JavaSweeper extends JFrame {
         ImageIcon icon = new ImageIcon(getClass().getResource(filename));
         return icon.getImage();
     }
+
+
 }
